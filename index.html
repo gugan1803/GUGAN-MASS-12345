@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Decision Network Simulator</title>
+<meta name="description" content="Interactive Decision Network simulator – Unit V: Uncertain Knowledge and Reasoning">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* AI Decision Network Simulator – styles */
+:root{--bg:#070b17;--tx:#e8ecf7;--mu:#9aa6c4;--ch:#4cc9f0;--de:#a78bfa;--ut:#fbbf24;--ok:#34d399;--bad:#fb7185;--gl:rgba(255,255,255,.06);--bd:rgba(255,255,255,.14)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;font:16px/1.65 Inter,system-ui,sans-serif;color:var(--tx);background:radial-gradient(900px 500px at 15% -5%,#1b2a6b66,transparent),radial-gradient(800px 500px at 100% 20%,#6d28d933,transparent),var(--bg)}
+h1,h2,h3{font-family:Sora,Inter,sans-serif;line-height:1.2;margin:0 0 .6em}
+h1{font-size:clamp(2.2rem,6vw,4rem);background:linear-gradient(90deg,var(--ch),var(--de),var(--ut));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:clamp(1.5rem,3.5vw,2.2rem)}p{max-width:75ch;color:var(--mu)}b,summary{color:var(--tx)}
+section{max-width:1100px;margin:auto;padding:70px 20px}
+a{color:var(--ch)}:focus-visible{outline:3px solid var(--ut);outline-offset:2px}
+.glass{background:var(--gl);border:1px solid var(--bd);border-radius:20px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.nav{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#070b17cc;backdrop-filter:blur(12px);border-bottom:1px solid var(--bd)}
+.brand{font:800 1.1rem Sora;color:var(--tx);text-decoration:none}
+nav a{color:var(--mu);text-decoration:none;margin-left:16px;font-size:.92rem;transition:color .2s}nav a:hover{color:var(--ch)}
+.burger{display:none;background:none;border:1px solid var(--bd);color:var(--tx);border-radius:10px;font-size:1.3rem;padding:2px 10px;cursor:pointer}
+.hero{text-align:center;padding-top:110px}.hero p{margin-inline:auto}
+.badge{display:inline-block;padding:6px 16px;border:1px solid var(--bd);border-radius:99px;background:var(--gl);color:var(--ch)}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0}.hero .cta{justify-content:center}
+.btn{font:600 .95rem Inter;padding:12px 24px;border-radius:14px;border:1px solid var(--bd);background:var(--gl);color:var(--tx);cursor:pointer;text-decoration:none;transition:transform .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px #4cc9f044}.btn.primary{background:linear-gradient(90deg,#2563eb,#7c3aed);border:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:40px}
+.stats div{padding:18px}.stats b{display:block;font:800 2.4rem Sora;color:var(--ch)}.stats span{color:var(--mu)}
+.flow{display:flex;align-items:stretch;gap:12px;margin-top:24px}.ar{align-self:center;font-size:2rem;color:var(--mu)}
+.node{flex:1;padding:20px}.node p{margin:0}.chance{border-color:var(--ch)}.decision{border-color:var(--de)}.utility{border-color:var(--ut)}
+.chance h3{color:var(--ch)}.decision h3{color:var(--de)}.utility h3{color:var(--ut)}
+.sim{padding:24px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:separate;border-spacing:8px;min-width:480px}
+th{text-align:left;font-weight:600;color:var(--mu)}
+input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:#0b1124;color:var(--tx);font:inherit}
+input:focus{border-color:var(--ch)}.warn{color:var(--bad);background:#fb718522;padding:10px 14px;border-radius:12px}
+.results{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}.res{padding:18px}.res.win{border-color:var(--ok);box-shadow:0 0 28px #34d39933}
+.res h3{margin-bottom:4px}.res .v{font:800 2rem Sora}.res small{color:var(--mu)}
+.best{padding:20px;text-align:center;border-color:var(--ut)}.best span{display:block;color:var(--mu)}.best strong{font:800 1.8rem Sora;color:var(--ut)}
+.net{display:flex;flex-direction:column;align-items:center;gap:0;margin-top:24px}
+.nd{padding:12px 28px;text-align:center;font-weight:600;min-width:150px}.best-n{border-color:var(--ok);color:var(--ok)}
+.line{width:3px;height:30px;background:repeating-linear-gradient(var(--ch) 0 6px,transparent 6px 12px);background-size:100% 12px;animation:flow 1s linear infinite}
+.split{display:flex;gap:min(30vw,200px)}.row2{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}.split .line:first-child{transform:rotate(25deg)}.split .line:last-child{transform:rotate(-25deg)}
+@keyframes flow{to{background-position:0 12px}}
+.formula{font:800 clamp(1.3rem,4vw,2.2rem) Sora;text-align:center;padding:24px;color:var(--ut);margin:16px 0}
+.plain{color:var(--mu)}.steps{padding:20px;color:var(--mu)}.steps p{margin:.4em 0;max-width:none}.steps code{color:var(--tx)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.card{padding:20px;transition:transform .25s,border-color .25s}.card:hover{transform:translateY(-5px);border-color:var(--ch)}.card p{margin:0}summary{cursor:pointer;font-weight:600}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:14px}.sliders input{padding:0;accent-color:var(--ch)}
+.bar{height:8px;border-radius:9px;background:linear-gradient(90deg,var(--ch),var(--de));margin-top:4px}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 16px;border-radius:12px;border:1px solid var(--bd);background:#0b1124;color:var(--tx);font:inherit;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--ch)}.opt.ok{border-color:var(--ok);background:#34d39922}.opt.no{border-color:var(--bad);background:#fb718522}
+.outcome{padding:24px;margin-top:24px;border-color:var(--ok)}.outcome p{margin:0}
+footer{display:flex;flex-direction:column;align-items:center;gap:4px;padding:36px 20px;border-top:1px solid var(--bd);color:var(--mu);text-align:center}
+.rv{opacity:0;transform:translateY(18px);transition:.6s}.rv.in{opacity:1;transform:none}
+@media(max-width:760px){.burger{display:block}nav{display:none;position:absolute;top:100%;left:0;right:0;background:#070b17f2;padding:10px 20px;flex-direction:column}nav.open{display:flex}nav a{margin:10px 0}
+.flow{flex-direction:column}.ar{transform:rotate(90deg)}.results{grid-template-columns:1fr}.split{gap:30vw}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv{opacity:1;transform:none}}
+
+:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:calc(70px + env(safe-area-inset-top,0px))}
+.nav{top:env(safe-area-inset-top,0px)}
+body{background-color:#070b17;overflow-x:hidden}
+img,svg{max-width:100%}
+
+</style>
+</head>
+<body>
+<header class="nav" id="top">
+  <a class="brand" href="#home">🧠 DN Simulator</a>
+  <button class="burger" id="burger" aria-label="Toggle menu" aria-expanded="false">☰</button>
+  <nav id="menu" aria-label="Main">
+    <a href="#learn">Learn</a><a href="#simulator">Simulator</a><a href="#network">Network</a>
+    <a href="#eu">Expected Utility</a><a href="#apps">Applications</a><a href="#phone">Multi-Attribute</a>
+    <a href="#voi">Value of Info</a><a href="#quiz">Quiz</a><a href="#theory">Theory</a>
+  </nav>
+</header>
+<main>
+<section id="home" class="hero">
+  <p class="badge">Unit V – Uncertain Knowledge and Reasoning</p>
+  <h1>AI Decision Network Simulator</h1>
+  <p class="lead">A Decision Network combines probability and utility so an AI agent can pick the action with the best expected outcome when the world is uncertain. Change the numbers below and watch the decision change.</p>
+  <div class="cta"><a class="btn primary" href="#simulator">Start Simulation</a><a class="btn" href="#learn">Learn Decision Networks</a></div>
+  <div class="stats">
+    <div class="glass"><b data-count="3">0</b><span>node types</span></div>
+    <div class="glass"><b data-count="2">0</b><span>decisions compared</span></div>
+    <div class="glass"><b data-count="1">0</b><span>rule: maximise EU</span></div>
+  </div>
+</section>
+
+<section id="learn">
+  <h2>What is a Decision Network?</h2>
+  <p>A <b>Decision Network</b> (also called an <i>influence diagram</i>) extends a Bayesian network with decision and utility nodes. It models <b>decision-making under uncertainty</b>: we don't know what will happen, so we weigh each outcome by how likely it is (probability) and how good or bad it is (utility). The rational choice is the one with the highest <b>expected utility</b>.</p>
+  <div class="flow">
+    <div class="glass node chance"><h3>⬭ Chance Node</h3><p>An uncertain event with probabilities, e.g. Weather: Sunny 70%, Rainy 30%.</p></div>
+    <span class="ar">→</span>
+    <div class="glass node decision"><h3>▭ Decision Node</h3><p>The choices the agent controls, e.g. Carry or Don't carry an umbrella.</p></div>
+    <span class="ar">→</span>
+    <div class="glass node utility"><h3>◇ Utility Node</h3><p>The value of an outcome, e.g. +10 for staying dry, −10 for getting soaked.</p></div>
+  </div>
+</section>
+
+<section id="simulator">
+  <h2>Interactive Decision Network Simulator</h2>
+  <p>Problem: <b>“Should I carry an umbrella today?”</b> Edit any name, probability or utility. Results update instantly.</p>
+  <div class="glass sim">
+    <div class="tablewrap"><table>
+      <tr><th scope="row">State name</th><td><input id="s0" aria-label="State 1 name" value="Sunny"></td><td><input id="s1" aria-label="State 2 name" value="Rainy"></td></tr>
+      <tr><th scope="row">Probability (%)</th><td><input id="p0" type="number" min="0" max="100" step="any" aria-label="Probability of state 1" value="70"></td><td><input id="p1" type="number" min="0" max="100" step="any" aria-label="Probability of state 2" value="30"></td></tr>
+      <tr><th scope="row"><input id="d0" aria-label="Decision 1 name" value="Carry Umbrella"></th><td><input id="u00" type="number" step="any" aria-label="Utility of decision 1 in state 1" value="5"></td><td><input id="u01" type="number" step="any" aria-label="Utility of decision 1 in state 2" value="10"></td></tr>
+      <tr><th scope="row"><input id="d1" aria-label="Decision 2 name" value="Do Not Carry Umbrella"></th><td><input id="u10" type="number" step="any" aria-label="Utility of decision 2 in state 1" value="8"></td><td><input id="u11" type="number" step="any" aria-label="Utility of decision 2 in state 2" value="-10"></td></tr>
+    </table></div>
+    <p id="warn" class="warn" role="alert" hidden></p>
+    <div class="cta"><button class="btn" id="norm">Normalize to 100%</button><button class="btn" id="reset">Reset example</button></div>
+    <div class="results">
+      <div class="glass res" id="r0"></div><div class="glass res" id="r1"></div>
+    </div>
+    <div class="glass best" aria-live="polite"><span>🏆 Recommended Decision</span><strong id="best"></strong></div>
+  </div>
+</section>
+
+<section id="network">
+  <h2>Visual Decision Network</h2>
+  <p>This diagram reads your simulator values live.</p>
+  <div class="net">
+    <div class="glass nd chance" id="nW">Weather</div><i class="line"></i>
+    <div class="glass nd chance" id="nS"></div><i class="line"></i>
+    <div class="glass nd decision">Decision</div>
+    <div class="split"><i class="line"></i><i class="line"></i></div>
+    <div class="row2"><div class="glass nd decision" id="nO0"></div><div class="glass nd decision" id="nO1"></div></div>
+    <div class="split"><i class="line"></i><i class="line"></i></div>
+    <div class="glass nd utility">Utility</div><i class="line"></i>
+    <div class="glass nd utility" id="nE"></div><i class="line"></i>
+    <div class="glass nd best-n" id="nB"></div>
+  </div>
+</section>
+
+<section id="eu">
+  <h2>Expected Utility</h2>
+  <p>Expected utility is the average payoff of a decision if you could repeat the situation many times, weighting each outcome by its probability.</p>
+  <div class="glass formula">EU(D) = Σ P(S) × U(D,S)</div>
+  <ul class="plain">
+    <li><b>P(S)</b> – probability that state S happens.</li>
+    <li><b>U(D,S)</b> – utility of taking decision D when state S happens.</li>
+    <li><b>EU(D)</b> – expected utility of decision D (sum over all states).</li>
+  </ul>
+  <h3>Step-by-step (live from the simulator)</h3>
+  <div class="glass steps" id="steps"></div>
+</section>
+
+<section id="apps">
+  <h2>Real-World Applications</h2>
+  <div class="grid">
+    <div class="glass card"><h3>🏥 Healthcare</h3><p>Choose a treatment given uncertain diagnoses and patient outcomes.</p></div>
+    <div class="glass card"><h3>📈 Investment</h3><p>Weigh returns against market uncertainty and risk.</p></div>
+    <div class="glass card"><h3>🏢 Business Strategy</h3><p>Decide on launches or pricing under uncertain demand.</p></div>
+    <div class="glass card"><h3>🛡️ Insurance</h3><p>Price policies using the probability and cost of claims.</p></div>
+    <div class="glass card"><h3>✈️ Travel Planning</h3><p>Pick routes and bookings with delay and weather risk.</p></div>
+    <div class="glass card"><h3>📱 Product Selection</h3><p>Compare options on several attributes at once.</p></div>
+    <div class="glass card"><h3>🎓 Career Decisions</h3><p>Compare paths with uncertain growth, pay and satisfaction.</p></div>
+  </div>
+</section>
+
+<section id="phone">
+  <h2>Multi-Attribute Decision: Choose a Smartphone</h2>
+  <p>Each phone is scored 0–10 on every attribute (higher is better; a high Price score means cheaper). Set the weights for what matters to you. Overall utility = Σ weight × score, with weights normalised to sum to 1.</p>
+  <div class="glass sim">
+    <div class="sliders" id="sliders"></div>
+    <div class="tablewrap"><table id="ptable"></table></div>
+    <div class="glass best" aria-live="polite"><span>📱 Best phone for your weights</span><strong id="pbest"></strong></div>
+  </div>
+</section>
+
+<section id="voi">
+  <h2>Value of Information</h2>
+  <p><b>Value of Information (VOI)</b> is how much better your expected result gets if you learn something before deciding. Example: a perfect weather forecast tells you Sunny or Rainy first, so you can choose the best action for each case.</p>
+  <div class="glass steps" id="voiBox"></div>
+  <p>The difference is the <b>Expected Value of Perfect Information (EVPI)</b>. If a forecast costs more than EVPI, it isn't worth buying.</p>
+</section>
+
+<section id="quiz">
+  <h2>Quiz</h2>
+  <div class="glass sim" id="quizBox"></div>
+</section>
+
+<section id="theory">
+  <h2>Theory Notes</h2>
+  <div class="grid">
+    <details class="glass card" open><summary>Decision Networks</summary><p>A graph with chance, decision and utility nodes. Edges show influence or information available before a decision.</p></details>
+    <details class="glass card"><summary>Utility Functions</summary><p>A utility function maps each outcome to a number showing how much the agent prefers it. Higher is better.</p></details>
+    <details class="glass card"><summary>Multi-attribute Utility</summary><p>When outcomes have several attributes, combine them, often as a weighted sum U = Σ wᵢ·uᵢ.</p></details>
+    <details class="glass card"><summary>Expected Utility</summary><p>EU(a) = Σ P(s)·U(a,s). A rational agent picks the action that maximises EU (MEU principle).</p></details>
+    <details class="glass card"><summary>Value of Information</summary><p>VOI = expected utility with the information − expected utility without it. It is never negative.</p></details>
+    <details class="glass card"><summary>Decision-making under Uncertainty</summary><p>The agent doesn't know the true state, so it uses probabilities for beliefs and utilities for preferences.</p></details>
+  </div>
+  <div class="glass outcome"><h3>Project Learning Outcome</h3><p>This project demonstrates how AI can make rational decisions under uncertainty using probability, utility and expected utility, by letting you build, change and test a working Decision Network.</p></div>
+</section>
+</main>
+<footer><b>AI Decision Network Simulator</b><span>Unit V – Uncertain Knowledge and Reasoning</span><span>Educational Project</span></footer>
+<script>
+/* AI Decision Network Simulator – logic. Sections: helpers, simulator, multi-attribute, quiz, UI effects */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => (Math.round(n * 100) / 100).toString();
+const DEFAULTS = {s0:'Sunny',s1:'Rainy',p0:70,p1:30,d0:'Carry Umbrella',d1:'Do Not Carry Umbrella',u00:5,u01:10,u10:8,u11:-10};
+const IDS = Object.keys(DEFAULTS);
+
+/* ---------- 1. Decision network simulator ---------- */
+function readSim() {
+  const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? 0 : v; };
+  const nm = (id, fb) => $(id).value.trim() || fb;
+  return {
+    S: [nm('s0','State 1'), nm('s1','State 2')],
+    D: [nm('d0','Decision 1'), nm('d1','Decision 2')],
+    P: [num('p0'), num('p1')],
+    U: [[num('u00'), num('u01')], [num('u10'), num('u11')]]
+  };
+}
+function updateSim() {
+  const m = readSim(), total = m.P[0] + m.P[1];
+  const bad = m.P.some(p => p < 0 || p > 100) ? 'Each probability must be between 0 and 100.'
+            : Math.abs(total - 100) > 0.001 ? `Probabilities add up to ${fmt(total)}%. They must total 100%.` : '';
+  $('warn').hidden = !bad; $('warn').textContent = bad;
+  const eu = m.D.map((_, d) => m.U[d][0] * m.P[0] / 100 + m.U[d][1] * m.P[1] / 100);
+  const w = eu[0] === eu[1] ? -1 : (eu[0] > eu[1] ? 0 : 1);
+  [0, 1].forEach(d => {
+    const r = $('r' + d);
+    r.className = 'glass res' + (d === w ? ' win' : '');
+    r.innerHTML = `<h3>${esc(m.D[d])}</h3><div class="v">EU = ${fmt(eu[d])}</div>
+      <small>(${fmt(m.P[0]/100)} × ${m.U[d][0]}) + (${fmt(m.P[1]/100)} × ${m.U[d][1]})</small>`;
+  });
+  const bestTxt = bad ? 'Fix the probabilities first' : (w < 0 ? 'Tie: both decisions are equal' : m.D[w]);
+  $('best').textContent = bestTxt;
+  // visual network
+  $('nS').textContent = `${m.S[0]} ${fmt(m.P[0])}% / ${m.S[1]} ${fmt(m.P[1])}%`;
+  $('nO0').textContent = m.D[0]; $('nO1').textContent = m.D[1];
+  $('nE').textContent = `EU: ${fmt(eu[0])} vs ${fmt(eu[1])}`;
+  $('nB').textContent = '🏆 ' + bestTxt;
+  // step-by-step
+  const q = d => `<p><b>EU(${esc(m.D[d])})</b> = (${fmt(m.P[0]/100)} × ${m.U[d][0]}) + (${fmt(m.P[1]/100)} × ${m.U[d][1]})
+    = ${fmt(m.U[d][0]*m.P[0]/100)} + ${fmt(m.U[d][1]*m.P[1]/100)} = <code>${fmt(eu[d])}</code></p>`;
+  $('steps').innerHTML = q(0) + q(1) + `<p><b>Choose the larger EU →</b> <code>${esc(bestTxt)}</code></p>`;
+  // value of perfect information
+  const perfect = [0, 1].reduce((a, s) => a + m.P[s] / 100 * Math.max(m.U[0][s], m.U[1][s]), 0);
+  const maxEU = Math.max(eu[0], eu[1]);
+  $('voiBox').innerHTML = `<p><b>Without a forecast:</b> best EU = <code>${fmt(maxEU)}</code></p>
+    <p><b>With a perfect forecast:</b> you pick the best action in each state: (${fmt(m.P[0]/100)} × ${Math.max(m.U[0][0],m.U[1][0])}) + (${fmt(m.P[1]/100)} × ${Math.max(m.U[0][1],m.U[1][1])}) = <code>${fmt(perfect)}</code></p>
+    <p><b>EVPI</b> = ${fmt(perfect)} − ${fmt(maxEU)} = <code>${fmt(perfect - maxEU)}</code></p>`;
+}
+IDS.forEach(id => $(id).addEventListener('input', updateSim));
+$('reset').onclick = () => { IDS.forEach(id => $(id).value = DEFAULTS[id]); updateSim(); };
+$('norm').onclick = () => {
+  const a = parseFloat($('p0').value) || 0, b = parseFloat($('p1').value) || 0, t = a + b;
+  if (t <= 0) { $('p0').value = 50; $('p1').value = 50; }
+  else { $('p0').value = fmt(a / t * 100); $('p1').value = fmt(100 - a / t * 100 > 0 ? 100 - fmt(a / t * 100) : 0); }
+  updateSim();
+};
+
+/* ---------- 2. Multi-attribute utility (smartphones) ---------- */
+const ATTR = ['Price', 'Performance', 'Battery', 'Camera'];
+const PHONES = [{n:'Phone A (Budget)', s:[9,5,8,5]}, {n:'Phone B (Flagship)', s:[3,10,7,10]}, {n:'Phone C (Balanced)', s:[6,8,9,7]}];
+$('sliders').innerHTML = ATTR.map((a, i) => `<div><label for="w${i}">${a} weight: <b id="wv${i}">5</b></label>
+  <input type="range" id="w${i}" min="0" max="10" value="5"></div>`).join('');
+function updatePhones() {
+  const w = ATTR.map((_, i) => +$('w' + i).value); w.forEach((v, i) => $('wv' + i).textContent = v);
+  const tot = w.reduce((a, b) => a + b, 0);
+  if (!tot) { $('pbest').textContent = 'Set at least one weight above 0'; return; }
+  const sc = PHONES.map(p => p.s.reduce((a, s, i) => a + s * w[i] / tot, 0));
+  const top = sc.indexOf(Math.max(...sc));
+  $('ptable').innerHTML = `<tr><th>Phone</th>${ATTR.map(a => `<th>${a}</th>`).join('')}<th>Utility</th></tr>` +
+    PHONES.map((p, j) => `<tr><td>${p.n}</td>${p.s.map(s => `<td>${s}</td>`).join('')}
+    <td><b>${fmt(sc[j])}</b><div class="bar" style="width:${sc[j] * 10}%"></div></td></tr>`).join('');
+  $('pbest').textContent = PHONES[top].n + ' (' + fmt(sc[top]) + ')';
+}
+$('sliders').addEventListener('input', updatePhones);
+
+/* ---------- 3. Quiz ---------- */
+const QS = [
+ {q:'Which node represents an uncertain event with probabilities?', o:['Chance node','Decision node','Utility node','Root node'], a:0},
+ {q:'Which node represents the choices available to the agent?', o:['Chance node','Decision node','Utility node','Evidence node'], a:1},
+ {q:'What does a utility node store?', o:['Probability of an event','The list of actions','The value of an outcome','The prior belief'], a:2},
+ {q:'A rational agent chooses the decision with the…', o:['Lowest probability','Highest expected utility','Lowest utility','Most states'], a:1},
+ {q:'Probabilities of all states in a chance node must sum to…', o:['0','0.5','10','1 (100%)'], a:3}];
+let qi = 0, score = 0;
+function showQ() {
+  const box = $('quizBox');
+  if (qi >= QS.length) {
+    box.innerHTML = `<h3>Final score: ${score} / ${QS.length}</h3><p>${score >= 4 ? 'Excellent work!' : 'Review the theory above and try again.'}</p><button class="btn primary" id="rq">Restart Quiz</button>`;
+    $('rq').onclick = () => { qi = 0; score = 0; showQ(); }; return;
+  }
+  const q = QS[qi];
+  box.innerHTML = `<p>Question ${qi + 1} of ${QS.length}</p><h3>${q.q}</h3>` +
+    q.o.map((t, i) => `<button class="opt" data-i="${i}">${t}</button>`).join('') + `<p id="fb" aria-live="polite"></p><button class="btn" id="nx" hidden>${qi === QS.length - 1 ? 'See score' : 'Next question'}</button>`;
+  box.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i, ok = i === q.a; if (ok) score++;
+    box.querySelectorAll('.opt').forEach((x, j) => { x.disabled = true; if (j === q.a) x.classList.add('ok'); });
+    if (!ok) b.classList.add('no');
+    $('fb').textContent = ok ? '✅ Correct!' : '❌ Incorrect. Correct answer: ' + q.o[q.a];
+    $('nx').hidden = false; $('nx').focus();
+  });
+  $('nx') && ($('nx').onclick = () => { qi++; showQ(); });
+}
+
+/* ---------- 4. UI: menu, reveal, counters ---------- */
+$('burger').onclick = () => { const o = $('menu').classList.toggle('open'); $('burger').setAttribute('aria-expanded', o); };
+$('menu').addEventListener('click', e => { if (e.target.tagName === 'A') $('menu').classList.remove('open'); });
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold: .1});
+document.querySelectorAll('section:not(.hero) > h2, .grid, .net, .sim').forEach(el => { el.classList.add('rv'); io.observe(el); });
+document.querySelectorAll('[data-count]').forEach(el => {
+  const t = +el.dataset.count; let n = 0;
+  const id = setInterval(() => { el.textContent = ++n; if (n >= t) clearInterval(id); }, 350);
+});
+
+updateSim(); updatePhones(); showQ();
+
+</script>
+</body>
+</html>
